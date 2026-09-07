@@ -45,7 +45,7 @@ function FieldLayout() {
           <Outlet />
         </main>
 
-        <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur print:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-card/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-18px_rgba(31,42,28,0.5)] backdrop-blur-xl print:hidden">
           <ul className="mx-auto flex max-w-lg items-stretch justify-between">
             {TABS.map(({ to, label, Icon, ...rest }) => {
               const exact = "exact" in rest && rest.exact;
@@ -57,20 +57,20 @@ function FieldLayout() {
                     to={to}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold",
+                      "flex min-h-[66px] flex-col items-center justify-center gap-1 px-1 text-[10.5px] font-bold tracking-[0.02em] transition-colors",
                       active ? "text-primary" : "text-muted-foreground",
                     )}
                   >
                     <span
                       className={cn(
-                        "flex items-center justify-center rounded-full transition-colors",
+                        "flex items-center justify-center rounded-full transition-all duration-200",
                         center
-                          ? "-mt-6 h-14 w-14 bg-primary text-primary-foreground shadow-lg"
-                          : "h-8 w-8",
-                        !center && active && "bg-primary/10",
+                          ? "-mt-7 h-15 w-15 bg-primary text-primary-foreground shadow-[0_10px_24px_-10px_rgba(200,109,81,0.85)] ring-4 ring-card"
+                          : "h-9 w-9",
+                        !center && active && "bg-primary/12",
                       )}
                     >
-                      <Icon className={center ? "h-7 w-7" : "h-5 w-5"} aria-hidden />
+                      <Icon className={center ? "h-7 w-7" : "h-[21px] w-[21px]"} aria-hidden />
                     </span>
                     {label}
                   </Link>
