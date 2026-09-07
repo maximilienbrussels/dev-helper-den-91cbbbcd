@@ -13,10 +13,11 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/veld")({
   ssr: false,
   beforeLoad: async () => {
+    const authHref = pathWithMode("/auth", "field");
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    if (error || !data.user) throw redirect({ href: authHref });
     const access = await checkPortalAccess().catch(() => null);
-    if (!access?.allowed) throw redirect({ to: "/auth" });
+    if (!access?.allowed) throw redirect({ href: authHref });
     return { user: data.user, portalRole: access.role };
   },
   component: FieldLayout,
