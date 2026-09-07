@@ -4,6 +4,7 @@ import { CalendarDays, Inbox, MoreHorizontal, QrCode, Sprout } from "lucide-reac
 import { neonSupabaseCompat as supabase } from "@/lib/neon-auth-compat";
 import { checkPortalAccess } from "@/lib/portal-access.functions";
 import { PortalProvider } from "@/lib/portal-store";
+import { pathWithMode } from "@/lib/app-mode";
 import { cn } from "@/lib/utils";
 
 /**
