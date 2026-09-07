@@ -6,6 +6,7 @@ import { neonSupabaseCompat as supabase } from "@/lib/neon-auth-compat";
 import { usePortal } from "@/lib/portal-store";
 import { getAdminUrl } from "@/lib/urls";
 import { Button } from "@/components/ui/button";
+import { FieldCard, FieldLinkAction, FieldPageHeader } from "@/components/veld/field-ui";
 import { cn } from "@/lib/utils";
 import { LANGS } from "@/lib/portal-routes";
 import type { Lang } from "@/lib/portal-types";
