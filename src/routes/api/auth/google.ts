@@ -18,7 +18,8 @@ export const Route = createFileRoute("/api/auth/google")({
           cookieHeader,
           OAUTH_STATE_COOKIE,
           GOOGLE_AUTH_ENDPOINT,
-          GOOGLE_SCOPES,
+          GOOGLE_LOGIN_SCOPES,
+          GOOGLE_CALENDAR_SCOPES,
         } = await import("@/lib/google-oauth.server");
 
         const { logAuthConfig, loginErrorUrl } = await import("@/lib/auth-config");
@@ -37,25 +38,34 @@ export const Route = createFileRoute("/api/auth/google")({
           );
         }
 
-        const requested = new URL(request.url).searchParams.get("next");
+        const params = new URL(request.url).searchParams;
+        const requested = params.get("next");
         const next = requested && requested.startsWith("/") ? requested : "";
+        // Alleen wanneer een teamlid uitdrukkelijk de agenda wil koppelen
+        // vragen we agenda-toestemming. Aanmelden doet dat nooit.
+        const wantsCalendar = params.get("calendar") === "1";
         const nonce = crypto.randomUUID().replace(/-/g, "");
         const base = next ? `${nonce}.${btoa(next)}` : nonce;
         // `link=1`: koppelen aan het al aangemelde account i.p.v. inloggen.
-        const state =
-          new URL(request.url).searchParams.get("link") === "1" ? `${base}.L` : base;
+        const state = params.get("link") === "1" ? `${base}.L` : base;
 
         const authUrl = new URL(GOOGLE_AUTH_ENDPOINT);
         authUrl.searchParams.set("client_id", creds.clientId);
         authUrl.searchParams.set("redirect_uri", redirectUri(request));
         authUrl.searchParams.set("response_type", "code");
-        authUrl.searchParams.set("scope", GOOGLE_SCOPES);
+        authUrl.searchParams.set("scope", wantsCalendar ? GOOGLE_CALENDAR_SCOPES : GOOGLE_LOGIN_SCOPES);
         authUrl.searchParams.set("state", state);
-        // Offline + consent: alleen zo geeft Google een refresh_token terug,
-        // dat we nodig hebben om de agenda te blijven synchroniseren.
-        authUrl.searchParams.set("prompt", "consent select_account");
-        authUrl.searchParams.set("access_type", "offline");
-        authUrl.searchParams.set("include_granted_scopes", "true");
+        if (wantsCalendar) {
+          // Offline + consent: alleen zo geeft Google een refresh_token terug,
+          // dat we nodig hebben om de agenda te blijven synchroniseren.
+          authUrl.searchParams.set("prompt", "consent");
+          authUrl.searchParams.set("access_type", "offline");
+          authUrl.searchParams.set("include_granted_scopes", "true");
+        } else {
+          // Gewone aanmelding: enkel accountkeuze, geen extra toestemmingen.
+          authUrl.searchParams.set("prompt", "select_account");
+          authUrl.searchParams.set("access_type", "online");
+        }
 
         return new Response(null, {
           status: 302,

@@ -84,14 +84,21 @@ export type GoogleProfile = {
   tokens: GoogleTokens;
 };
 
-/** Scopes voor de aanmelding + agenda-synchronisatie. */
-export const GOOGLE_SCOPES = [
-  "openid",
-  "email",
-  "profile",
+/**
+ * Aanmelden vraagt uitsluitend naam en e-mailadres. Geen agenda-toegang:
+ * dat is een aparte, bewuste keuze van een teamlid (zie GOOGLE_CALENDAR_SCOPES).
+ */
+export const GOOGLE_LOGIN_SCOPES = ["openid", "email", "profile"].join(" ");
+
+/** Extra toestemming voor live agenda-synchronisatie (alleen op verzoek). */
+export const GOOGLE_CALENDAR_SCOPES = [
+  GOOGLE_LOGIN_SCOPES,
   "https://www.googleapis.com/auth/calendar.events",
   "https://www.googleapis.com/auth/calendar.readonly",
 ].join(" ");
+
+/** @deprecated gebruik GOOGLE_LOGIN_SCOPES of GOOGLE_CALENDAR_SCOPES. */
+export const GOOGLE_SCOPES = GOOGLE_LOGIN_SCOPES;
 
 /** Wisselt de OAuth-code in voor het profiel én de tokens van de gebruiker. */
 export async function exchangeCodeForProfile(

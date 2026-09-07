@@ -121,6 +121,10 @@ export function SyncSettings() {
               {google.data?.linked ? "Opnieuw koppelen" : "Koppelen met Google"}
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Agenda-toegang wordt alleen hier gevraagd, en enkel wanneer je zelf koppelt. Gewoon
+            aanmelden met Google vraagt uitsluitend je naam en e-mailadres.
+          </p>
           {google.data?.redirectUris?.length ? (
             <p className="text-xs text-muted-foreground">
               Toegelaten terugkeeradressen: {google.data.redirectUris.join(" · ")}

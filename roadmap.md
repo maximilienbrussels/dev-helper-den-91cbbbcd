@@ -30,3 +30,13 @@
 - [ ] OAuth-secrets: Google, GitHub, Mastodon, Bluesky
 - [ ] PICKUP_QR_SECRET (ondertekening afhaal-QR)
 - [ ] Passkeys (WebAuthn) end-to-end testen
+
+## Google-toestemmingen (afgehandeld)
+- [x] Aanmelden met Google vraagt enkel openid/e-mail/profiel
+- [x] Agenda-toestemming enkel via de koppelknop in Synchronisatie (`?calendar=1`, offline)
+- [x] Tokens worden alleen bewaard wanneer agenda-toegang is gegeven
+
+## Mobiel ontwerp veld-app (afgehandeld)
+- [x] Gedeelde bouwstenen `src/components/veld/field-ui.tsx`
+- [x] Vandaag, Aanvragen, Diensten, Meer op de nieuwe stijl
+- [x] Verfijnde onderbalk met zwevende scanknop

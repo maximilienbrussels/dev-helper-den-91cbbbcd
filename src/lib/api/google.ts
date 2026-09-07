@@ -25,9 +25,13 @@ export function runGoogleSync() {
   return apiFetch<GoogleSyncResponse>("/api/google/sync", { method: "POST" });
 }
 
-/** Start (of hernieuwt) de Google-koppeling met offline toegang. */
+/**
+ * Start (of hernieuwt) de agenda-koppeling met offline toegang.
+ * `calendar=1` is wat de agenda-toestemming vraagt; gewoon aanmelden doet dat nooit.
+ */
 export function connectGoogle(next?: string): void {
   const url = new URL("/api/auth/google", window.location.origin);
+  url.searchParams.set("calendar", "1");
   if (next) url.searchParams.set("next", next);
   window.location.href = url.toString();
 }
