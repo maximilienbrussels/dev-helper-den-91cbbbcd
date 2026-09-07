@@ -151,6 +151,13 @@ export function homePathFor(mode: AppMode): string {
   return "/";
 }
 
+/** Bestemming na een geslaagde aanmelding. */
+export function postLoginPathFor(mode: AppMode): string {
+  if (mode === "field") return "/veld";
+  if (mode === "admin") return "/nl/vandaag";
+  return "/account";
+}
+
 /** Zet de dev-override en herlaadt zodat de juiste bundel geladen wordt. */
 export function setAppModeOverride(mode: AppMode) {
   if (typeof window === "undefined") return;

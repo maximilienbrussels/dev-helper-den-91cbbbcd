@@ -8,7 +8,9 @@ import { isSuperAdminEmail } from "./superadmin";
 const langInput = (d: unknown) => {
   const base = emailInput(d);
   const lang = normalizeMailLang((d as { lang?: unknown } | null)?.lang);
-  return { ...base, lang };
+  const nextRaw = (d as { next?: unknown } | null)?.next;
+  const next = typeof nextRaw === "string" && nextRaw.startsWith("/") ? nextRaw : "/account";
+  return { ...base, lang, next };
 };
 
 /** Wachtwoord vergeten (klant): stuurt een herstellink (altijd hetzelfde antwoord). */
@@ -253,7 +255,7 @@ export const requestTeamLoginCode = createServerFn({ method: "POST" })
       return { ok: true as const, delivered: true, preview: false };
     }
 
-    const res = await server.sendTeamLoginCode(data.email, data.naam, data.lang);
+    const res = await server.sendTeamLoginCode(data.email, data.naam, data.lang, data.next);
     // Terugval op het scherm: altijd in preview/dev, én in productie voor de
     // vaste hoofdbeheerder zodat die nooit buitengesloten raakt als mail faalt.
     const allowFallback = (preview || isSuperAdminEmail(data.email)) && !res.delivered;

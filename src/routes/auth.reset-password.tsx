@@ -16,6 +16,7 @@ import {
   passwordRules,
 } from "@/components/auth/PasswordRequirements";
 import { MLogo } from "@/components/MLogo";
+import { resolveAppMode, postLoginPathFor } from "@/lib/app-mode";
 
 export const Route = createFileRoute("/auth/reset-password")({
   ssr: false,
@@ -51,6 +52,7 @@ const schema = z
 
 function PortalPasswordPage() {
   const navigate = useNavigate();
+  const postLoginPath = postLoginPathFor(resolveAppMode());
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [password, setPassword] = useState("");
@@ -74,11 +76,7 @@ function PortalPasswordPage() {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Wachtwoord succesvol gewijzigd!");
-    navigate({
-      to: "/$lang/$",
-      params: { lang: "nl", _splat: "vandaag" },
-      replace: true,
-    });
+    navigate({ to: postLoginPath, replace: true });
   }
 
   return (

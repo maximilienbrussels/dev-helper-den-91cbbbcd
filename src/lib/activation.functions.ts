@@ -14,7 +14,11 @@ const emailSchema = z.string().trim().toLowerCase().email().max(254);
 export const requestActivationCode = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z
-      .object({ email: emailSchema, lang: z.enum(["nl", "fr", "en"]).optional() })
+      .object({
+        email: emailSchema,
+        lang: z.enum(["nl", "fr", "en"]).optional(),
+        next: z.string().optional(),
+      })
       .parse(d),
   )
   .handler(async ({ data }) => {
@@ -24,10 +28,12 @@ export const requestActivationCode = createServerFn({ method: "POST" })
 
     const server = await import("./auth-email.server");
     const preview = await server.isPreviewEnvironment();
+    const next = data.next?.startsWith("/") ? data.next : "/account";
     const res = await server.sendTeamLoginCode(
       data.email,
       undefined,
       normalizeMailLang(data.lang),
+      next,
     );
     if (!res.code) throw new Error("Activatiecode aanmaken lukte niet. Probeer later opnieuw.");
     const { isSuperAdminEmail } = await import("./superadmin");
@@ -57,6 +63,7 @@ export const activateAccount = createServerFn({ method: "POST" })
         email: emailSchema,
         code: z.string().trim().regex(/^\d{6}$/, "Vul de 6-cijferige code in."),
         password: z.string().min(8, "Minstens 8 tekens").max(72),
+        next: z.string().optional(),
       })
       .parse(d),
   )
@@ -96,8 +103,9 @@ export const activateAccount = createServerFn({ method: "POST" })
     const { magicVerifyUrl, requestOrigin } = await import("./auth-email.server");
     const magic = await tokens.mintMagicToken(data.email, undefined, 600);
     const origin = await requestOrigin();
+    const next = data.next?.startsWith("/") ? data.next : "/account";
     const url = magic
-      ? await magicVerifyUrl(magic.token, `${origin}/nl/vandaag`)
+      ? await magicVerifyUrl(magic.token, `${origin}${next}`)
       : null;
     return { ok: true as const, url };
   });

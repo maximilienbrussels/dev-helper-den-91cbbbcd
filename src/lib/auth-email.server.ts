@@ -237,7 +237,7 @@ export async function sendTeamLoginCode(
   email: string,
   naam: string | undefined,
   lang: MailLang = "nl",
-  next = "/nl/vandaag",
+  next = "/account",
 ): Promise<TeamLoginCodeResult> {
   const origin = await requestOrigin();
   const auth = await import("./local-auth.server");

@@ -34,7 +34,7 @@ function FieldLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <PortalProvider>
+    <PortalProvider standaloneLang>
       <div className="flex min-h-[100dvh] w-full max-w-full flex-col overflow-x-hidden">
         <main
           className="flex-1 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-32"

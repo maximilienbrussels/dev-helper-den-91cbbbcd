@@ -28,6 +28,7 @@ import { DevSecretsModal } from "@/components/DevSecretsModal";
 import { diagnoseBrevo } from "@/lib/brevo-diagnostics.functions";
 import { checkPortalAccess } from "@/lib/portal-access.functions";
 import { getPublicUrl } from "@/lib/urls";
+import { resolveAppMode, postLoginPathFor } from "@/lib/app-mode";
 import { isPasskeySupported, passkeyErrorMessage } from "@/lib/auth/passkey";
 
 type BrevoProbe = { url: string; status: number; ok: boolean; ms: number; body: string } | null;
@@ -99,6 +100,7 @@ const emailOnly = z.string().trim().email("Vul een geldig e-mailadres in").max(2
 
 function AuthPage() {
   const navigate = useNavigate();
+  const postLoginPath = postLoginPathFor(resolveAppMode());
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -141,11 +143,7 @@ function AuthPage() {
     }
 
     if (staff) {
-      await navigate({
-        to: "/$lang/$",
-        params: { lang: "nl", _splat: "vandaag" },
-        replace: true,
-      });
+      await navigate({ to: postLoginPath, replace: true });
       return true;
     }
 
@@ -174,7 +172,7 @@ function AuthPage() {
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setBusy(true);
     try {
-      const res = await askActivation({ data: { email: parsed.data, lang: "nl" } });
+      const res = await askActivation({ data: { email: parsed.data, lang: "nl", next: postLoginPath } });
       setActivationStep(2);
       setActivationHint(res.devCode ?? null);
       setCanDiagnose(Boolean(res.canDiagnose) && !res.delivered);
@@ -199,7 +197,12 @@ function AuthPage() {
     setBusy(true);
     try {
       const res = await finishActivation({
-        data: { email: email.trim().toLowerCase(), code: activationCode, password: newPassword },
+        data: {
+          email: email.trim().toLowerCase(),
+          code: activationCode,
+          password: newPassword,
+          next: postLoginPath,
+        },
       });
       toast.success("Account geactiveerd. Je wordt aangemeld.");
       if (res.url) {
@@ -272,7 +275,7 @@ function AuthPage() {
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setBusy(true);
     try {
-      const res = await loginCode({ data: { email: parsed.data, lang: "nl" } });
+      const res = await loginCode({ data: { email: parsed.data, lang: "nl", next: postLoginPath } });
       setMagicSent(true);
       setDevCode(res.devCode ?? null);
       setDevUrl(res.devUrl ?? null);
@@ -369,14 +372,16 @@ function AuthPage() {
             <MLogo className="mx-auto h-12 w-auto" />
           </Link>
           <h1 className="font-display mt-3 text-xl font-bold">Maxilien</h1>
-          <p className="text-sm text-muted-foreground">Beheerportaal voor medewerkers</p>
+          <p className="text-sm text-muted-foreground">
+            {postLoginPath === "/veld" ? "Veld-app voor medewerkers" : "Beheerportaal voor medewerkers"}
+          </p>
         </div>
 
         {customerSession ? (
           <div className="rounded-lg border border-border bg-card p-5 text-center text-sm">
             <p className="font-semibold">Je bent ingelogd als klant</p>
             <p className="mt-1 text-muted-foreground">
-              Log eerst uit om toegang te krijgen tot het beheerportaal.
+              Log eerst uit om toegang te krijgen tot het {postLoginPath === "/veld" ? "veldportaal" : "beheerportaal"}.
             </p>
             <Button className="mt-4 w-full" onClick={() => void signOutCustomer()}>
               Uitloggen
@@ -449,7 +454,7 @@ function AuthPage() {
                 {diag ? <BrevoDiagnosticsPanel diag={diag} /> : null}
               </div>
             ) : null}
-            <LoginCodeForm email={email} next="/nl/vandaag" className="mt-4" />
+            <LoginCodeForm email={email} next={postLoginPath} className="mt-4" />
 
             <Button variant="outline" className="mt-4 w-full" onClick={() => setMagicSent(false)}>
               Terug naar aanmelden
@@ -504,8 +509,8 @@ function AuthPage() {
                       setBlueskyOpen(true);
                       return;
                     }
-                    stashRedirect("/nl/vandaag");
-                    startOAuth(id, "/nl/vandaag");
+                    stashRedirect(postLoginPath);
+                    startOAuth(id, postLoginPath);
                   }}
                   className="grid size-14 place-items-center rounded-full border border-border bg-card text-foreground shadow-sm transition-all duration-200 hover:scale-105 hover:border-primary hover:shadow-md active:scale-95 disabled:pointer-events-none disabled:opacity-60"
                 >
@@ -732,8 +737,8 @@ function AuthPage() {
         open={mastodonOpen}
         onOpenChange={setMastodonOpen}
         onConfirm={(instance) => {
-          stashRedirect("/nl/vandaag");
-          startOAuth("mastodon", "/nl/vandaag", instance);
+          stashRedirect(postLoginPath);
+          startOAuth("mastodon", postLoginPath, instance);
         }}
       />
       <BlueskyHandleDialog
@@ -749,8 +754,8 @@ function AuthPage() {
           submit: "Doorgaan met inloggen →",
         }}
         onConfirm={(handle) => {
-          stashRedirect("/nl/vandaag");
-          startOAuth("bluesky", "/nl/vandaag", handle);
+          stashRedirect(postLoginPath);
+          startOAuth("bluesky", postLoginPath, handle);
         }}
       />
       <DevSecretsModal />

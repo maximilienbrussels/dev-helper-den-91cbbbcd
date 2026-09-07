@@ -1,11 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Monitor, RefreshCw } from "lucide-react";
+import { Languages, LogOut, Monitor, RefreshCw } from "lucide-react";
 
 import { neonSupabaseCompat as supabase } from "@/lib/neon-auth-compat";
 import { usePortal } from "@/lib/portal-store";
 import { getAdminUrl } from "@/lib/urls";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { LANGS } from "@/lib/portal-routes";
+import type { Lang } from "@/lib/portal-types";
 
 export const Route = createFileRoute("/veld/meer")({
   head: () => ({
@@ -21,7 +24,7 @@ export const Route = createFileRoute("/veld/meer")({
 });
 
 function FieldMore() {
-  const { currentUser } = usePortal();
+  const { currentUser, lang, setLang } = usePortal();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -42,6 +45,29 @@ function FieldMore() {
         <p className="mt-1 text-xs uppercase tracking-wide text-muted-foreground">
           {currentUser.role === "admin" ? "Beheerder" : "Team"}
         </p>
+      </section>
+
+      <section className="rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+          <Languages className="h-4 w-4" aria-hidden /> Taal
+        </div>
+        <div className="mt-3 flex gap-2">
+          {LANGS.map((l) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => setLang(l as Lang)}
+              className={cn(
+                "flex-1 rounded-lg border py-2 text-sm font-semibold uppercase tracking-wide transition-colors",
+                lang === l
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-foreground hover:bg-surface",
+              )}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
       </section>
 
       <a
