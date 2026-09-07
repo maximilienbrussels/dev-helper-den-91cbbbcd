@@ -158,6 +158,24 @@ export function postLoginPathFor(mode: AppMode): string {
   return "/account";
 }
 
+/**
+ * Pad met `?mode=…` wanneer de modus niet vastligt via omgeving of hostname
+ * (Lovable-voorvertoning en lokale dev). Zo blijft de veld-app in beeld
+ * wanneer we naar /auth doorsturen; in productie blijft het pad ongewijzigd.
+ */
+export function pathWithMode(path: string, mode: AppMode): string {
+  if (getEnvAppMode() !== null) return path;
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (isAdminHostname(host) || isFieldHostname(host)) return path;
+  }
+  const [base = "/", hash = ""] = path.split("#");
+  const [pathname = "/", query = ""] = base.split("?");
+  const params = new URLSearchParams(query);
+  params.set("mode", mode);
+  return `${pathname}?${params.toString()}${hash ? `#${hash}` : ""}`;
+}
+
 /** Zet de dev-override en herlaadt zodat de juiste bundel geladen wordt. */
 export function setAppModeOverride(mode: AppMode) {
   if (typeof window === "undefined") return;
