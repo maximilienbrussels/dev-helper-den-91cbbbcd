@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MapPin, Sprout } from "lucide-react";
 
 import { usePortal } from "@/lib/portal-store";
 import { locationName } from "@/lib/portal-data";
+import {
+  FieldCard,
+  FieldEmpty,
+  FieldMeta,
+  FieldPageHeader,
+} from "@/components/veld/field-ui";
 
 export const Route = createFileRoute("/veld/diensten")({
   head: () => ({
@@ -27,21 +34,36 @@ function FieldServices() {
 
   return (
     <div className="space-y-4">
-      <h1 className="pt-1 text-2xl font-bold">Diensten</h1>
+      <FieldPageHeader
+        eyebrow="Aanbod"
+        title="Diensten"
+        subtitle={`${active.length} actief`}
+      />
       {active.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          Geen actieve diensten.
-        </p>
+        <FieldEmpty
+          icon={<Sprout className="h-6 w-6" aria-hidden />}
+          title="Geen actieve diensten"
+          hint="Diensten worden in het volledige beheer geactiveerd."
+        />
       ) : (
         <ul className="space-y-3">
           {active.map((s) => (
-            <li key={s.id} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-base font-semibold">{title(s)}</p>
-                <span className="shrink-0 text-base font-bold">€ {s.price}</span>
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">{locationName(s.location_id)}</p>
-              {desc(s) && <p className="mt-2 text-sm leading-relaxed">{desc(s)}</p>}
+            <li key={s.id}>
+              <FieldCard>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[17px] font-semibold leading-snug">{title(s)}</p>
+                  <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[15px] font-bold tabular-nums">
+                    € {s.price}
+                  </span>
+                </div>
+                <FieldMeta>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" aria-hidden />
+                    {locationName(s.location_id)}
+                  </span>
+                </FieldMeta>
+                {desc(s) && <p className="mt-2 text-[14.5px] leading-relaxed">{desc(s)}</p>}
+              </FieldCard>
             </li>
           ))}
         </ul>
