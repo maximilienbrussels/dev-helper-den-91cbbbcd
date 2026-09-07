@@ -1,34 +1,32 @@
 # Project roadmap
 
-## Import & 3-tier architectuur
-- [x] Importeer dev-helper-den repository
-- [ ] Zorg dat import stabiel blijft na build/dev-server restart
-- [ ] Publieke site (maximilien.brussels) werkend
-- [ ] Desktop manager (maximilien.site / manager.maximilien.brussels) werkend
-- [ ] Mobiele veld PWA (maximilien.app) werkend
+## 3-tier architectuur
+- [x] Publieke site (maximilien.brussels) — eigen shell, geen admin-code in de bundel
+- [x] Desktop manager (maximilien.site) — eigen shell + portaalroutes
+- [x] Mobiele veld-app (maximilien.app) — eigen shell + /veld-routes
+- [x] Modusdetectie: VITE_APP_MODE > hostname > ?mode= > localStorage (SSR-veilig)
+- [x] Kruislinks per domein (getPublicUrl / getAdminUrl / getFieldUrl)
 
 ## Mobiele veld PWA (maximilien.app)
-- [ ] Complete manifest.json + icons voor "Add to Home Screen"
-- [ ] Service worker met offline caching (veld-build)
-- [ ] Bottom navigation: Vandaag, Aanvragen, Scanner (center), Diensten, Meer
-- [ ] Vandaag: dagelijkse agenda
-- [ ] Aanvragen: actieve orders / aanvragen
-- [ ] Scanner: continue camera stream, zaklamp toggle, 6-teken fallback, auto-reset, print
-- [ ] Diensten: gestroomlijnde lijst
-- [ ] Meer: popup menu
-- [ ] Geen horizontaal scrollen, grote touch targets
-- [ ] Mobiel geoptimaliseerd voor Samsung
+- [x] manifest.field.json + iconen (192/512/maskable) en apple-touch-icon
+- [x] Service worker (vite-plugin-pwa, alleen bij VITE_APP_MODE=field), bewaakte registratie
+- [x] Offline-melding in de shell
+- [x] Bottomnav: Vandaag, Aanvragen, Scanner (midden), Diensten, Meer
+- [x] Vandaag: dagplanning met check-in
+- [x] Aanvragen: actieve aanvragen/orders
+- [x] Scanner: continue stream, zaklamp, 6-teken fallback, auto-reset 2 s, print
+- [x] Diensten: gestroomlijnde lijst
+- [x] Meer: profiel, taalkeuze, beheer openen, afmelden
+- [x] Geen horizontaal scrollen op 412 px, touchdoelen >= 56 px
+- [x] Veld-modus blijft bewaard bij doorsturen naar /auth (preview/dev)
+- [ ] Volledige test ingelogd (vereist databank-verbinding)
+- [ ] Installatietest op een echte Samsung-telefoon (na publicatie op maximilien.app)
 
-## Unified backend
-- [ ] Neon PostgreSQL database gekoppeld
-- [ ] Gedeelde authenticatie over public/admin/field
-- [ ] WebAuthn passkeys
-- [ ] Google / GitHub / Mastodon / Bluesky identity providers
-- [ ] CORS/oorsprongen correct voor 3 domeinen
-
-## Secrets & API keys
-- [ ] DATABASE_URL
-- [ ] Brevo API key
-- [ ] Scaleway S3 keys
-- [ ] Stripe keys
-- [ ] OAuth client secrets per provider
+## Unified backend & auth — geblokkeerd op ontbrekende sleutels
+- [ ] DATABASE_URL (Neon PostgreSQL)
+- [ ] Brevo API-sleutel (inlogcodes, transactionele mail)
+- [ ] Scaleway S3-sleutels (mediabibliotheek)
+- [ ] Stripe-sleutels (webshop, giften)
+- [ ] OAuth-secrets: Google, GitHub, Mastodon, Bluesky
+- [ ] PICKUP_QR_SECRET (ondertekening afhaal-QR)
+- [ ] Passkeys (WebAuthn) end-to-end testen
