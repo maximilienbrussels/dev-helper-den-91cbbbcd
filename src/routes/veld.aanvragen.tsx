@@ -1,12 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { CalendarDays, Mail, Phone, Users } from "lucide-react";
+import { CalendarDays, Inbox, Mail, Phone, Search, Users } from "lucide-react";
 
 import { usePortal } from "@/lib/portal-store";
 import { locationName } from "@/lib/portal-data";
 import type { BookingStatus } from "@/lib/portal-types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  FieldCard,
+  FieldEmpty,
+  FieldLinkAction,
+  FieldMeta,
+  FieldPageHeader,
+  StatusPill,
+} from "@/components/veld/field-ui";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/veld/aanvragen")({
@@ -53,27 +61,38 @@ function FieldRequests() {
 
   return (
     <div className="space-y-4">
-      <h1 className="pt-1 text-2xl font-bold">Aanvragen</h1>
-
-      <Input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Zoek op naam of e-mail"
-        className="h-12 text-base"
-        inputMode="search"
+      <FieldPageHeader
+        eyebrow="Postvak"
+        title="Aanvragen"
+        subtitle={`${list.length} in deze lijst`}
       />
 
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+      <div className="relative">
+        <Search
+          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Zoek op naam of e-mail"
+          className="h-12 rounded-xl pl-10 text-base"
+          inputMode="search"
+        />
+      </div>
+
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {FILTERS.map(({ value, label }) => (
           <button
             key={value}
             type="button"
             onClick={() => setFilter(value)}
+            aria-pressed={filter === value}
             className={cn(
-              "min-h-11 shrink-0 rounded-full border px-4 text-sm font-semibold",
+              "min-h-11 shrink-0 rounded-full border px-4 text-[14px] font-semibold transition-colors",
               filter === value
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground",
+                ? "border-primary bg-primary text-primary-foreground shadow-[0_6px_16px_-10px_rgba(200,109,81,0.9)]"
+                : "border-border/70 bg-card text-muted-foreground",
             )}
           >
             {label}
@@ -82,57 +101,65 @@ function FieldRequests() {
       </div>
 
       {list.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          Geen aanvragen in deze lijst.
-        </p>
+        <FieldEmpty
+          icon={<Inbox className="h-6 w-6" aria-hidden />}
+          title="Geen aanvragen in deze lijst"
+          hint="Kies een andere filter of wis je zoekterm."
+        />
       ) : (
         <ul className="space-y-3">
           {list.map((b) => (
-            <li key={b.id} className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-base font-semibold">{b.client_org || b.client_name}</p>
-                <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold uppercase">
-                  {b.status.replace(/_/g, " ")}
-                </span>
-              </div>
-              <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <CalendarDays className="h-3.5 w-3.5" aria-hidden />
-                  {b.date} · {b.start_time}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" aria-hidden />
-                  {b.guests_count}
-                </span>
-                <span>{locationName(b.location_id)}</span>
-              </p>
+            <li key={b.id}>
+              <FieldCard>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[17px] font-semibold leading-snug">
+                    {b.client_org || b.client_name}
+                  </p>
+                  <StatusPill tone={b.status === "gereserveerd" ? "done" : "neutral"}>
+                    {b.status.replace(/_/g, " ")}
+                  </StatusPill>
+                </div>
+                <FieldMeta>
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarDays className="h-3.5 w-3.5" aria-hidden />
+                    {b.date} · {b.start_time}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" aria-hidden />
+                    {b.guests_count}
+                  </span>
+                  <span>{locationName(b.location_id)}</span>
+                </FieldMeta>
 
-              <div className="mt-3 flex gap-2">
-                {b.client_phone && (
-                  <a
-                    href={`tel:${b.client_phone}`}
-                    className="flex h-12 flex-1 items-center justify-center gap-2 rounded-md border border-border text-sm font-semibold"
+                <div className="mt-3 flex gap-2">
+                  {b.client_phone && (
+                    <FieldLinkAction
+                      href={`tel:${b.client_phone}`}
+                      icon={<Phone className="h-4 w-4" aria-hidden />}
+                      className="flex-1"
+                    >
+                      Bellen
+                    </FieldLinkAction>
+                  )}
+                  <FieldLinkAction
+                    href={`mailto:${b.client_email}`}
+                    icon={<Mail className="h-4 w-4" aria-hidden />}
+                    className="flex-1"
                   >
-                    <Phone className="h-4 w-4" aria-hidden /> Bellen
-                  </a>
-                )}
-                <a
-                  href={`mailto:${b.client_email}`}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-md border border-border text-sm font-semibold"
-                >
-                  <Mail className="h-4 w-4" aria-hidden /> Mailen
-                </a>
-              </div>
+                    Mailen
+                  </FieldLinkAction>
+                </div>
 
-              {OPEN_STATUSES.includes(b.status) && b.status !== "gereserveerd" && (
-                <Button
-                  type="button"
-                  className="mt-2 h-12 w-full text-base"
-                  onClick={() => setStatus(b.id, "gereserveerd")}
-                >
-                  Bevestigen
-                </Button>
-              )}
+                {OPEN_STATUSES.includes(b.status) && b.status !== "gereserveerd" && (
+                  <Button
+                    type="button"
+                    className="mt-2 h-12 w-full rounded-xl text-[15px]"
+                    onClick={() => setStatus(b.id, "gereserveerd")}
+                  >
+                    Bevestigen
+                  </Button>
+                )}
+              </FieldCard>
             </li>
           ))}
         </ul>
