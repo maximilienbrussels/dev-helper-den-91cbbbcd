@@ -112,21 +112,9 @@ export const resolveLoginLink = createServerFn({ method: "POST" })
 
 /** Staat dit adres in het team? Server-only, nooit naar de client. */
 async function isStaffEmail(email: string): Promise<boolean> {
-  const mail = email.trim().toLowerCase();
-  // De vaste super-admin blijft altijd erkend, ook zonder databaserij.
-  if (isSuperAdminEmail(mail)) return true;
-  const { db } = await import("./neon.server");
-  try {
-    // Bewust geen kolommen veronderstellen die er niet zijn (bv. is_active):
-    // het bestaan van de rij volstaat als teamcheck.
-    const rows = (await db()`
-      select 1 as found from portal_admins where lower(email) = ${mail} limit 1
-    `) as Array<{ found: number }>;
-    return rows.length > 0;
-  } catch (error) {
-    console.error("[auth-mail] teamcheck mislukt:", error);
-    return false;
-  }
+  // Eén gedeelde bron: `portal_admins`, de rollenlijst én de vaste eigenaars.
+  const { isTeamEmail } = await import("./permission-core.server");
+  return isTeamEmail(email);
 }
 
 /**
@@ -157,7 +145,7 @@ export const requestTeamMagicLink = createServerFn({ method: "POST" })
       "teamMagic",
       data.email,
       data.naam,
-      "/nl/vandaag",
+      await (await import("./auth-email.server")).teamLandingPath(),
       data.lang,
     );
   });

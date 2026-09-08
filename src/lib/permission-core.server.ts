@@ -199,3 +199,90 @@ export const UPLOAD_PERMISSIONS = [
   "manage_settings",
   "manage_team",
 ] as const;
+
+/* --------------------------------------------------------- teamtoegang ----- */
+
+export type TeamAccess = {
+  allowed: boolean;
+  email: string | null;
+  role: "admin" | "team" | null;
+  permissions: string[];
+  fullAccess: boolean;
+};
+
+/**
+ * Eén gedeelde toegangscontrole voor élke omgeving (desktopbeheer én veld-app).
+ *
+ * Toegang wanneer de gebruiker vaste eigenaar is, een actieve rij in
+ * `portal_admins` heeft, een rol in `user_roles` heeft, óf minstens één recht
+ * uit de rechtenmatrix. Zo kan iemand nooit op de ene omgeving binnen en op de
+ * andere geweigerd worden.
+ */
+export async function resolveTeamAccess(context: PermissionContext): Promise<TeamAccess> {
+  const access = await resolveAccess(context);
+
+  if (access.fullAccess) {
+    const { PERMISSIONS } = await import("./rights-catalog");
+    return {
+      allowed: true,
+      email: access.email,
+      role: "admin",
+      permissions: [...PERMISSIONS],
+      fullAccess: true,
+    };
+  }
+
+  const permissions = await loadGrantedPermissions(access.roles);
+  let role: "admin" | "team" | null = null;
+  if (access.email) {
+    try {
+      const rows = (await (await sql())`
+        select role, active from portal_admins where lower(email) = ${access.email} limit 1
+      `) as Array<{ role: string; active: boolean }>;
+      const row = rows[0];
+      if (row?.active) role = normalizeRole(row.role) === "team" ? "team" : "admin";
+    } catch {
+      /* tabel of databank tijdelijk niet beschikbaar */
+    }
+  }
+  if (!role && (access.roles.length > 0 || permissions.length > 0)) role = "team";
+
+  return {
+    allowed: role !== null,
+    email: access.email,
+    role,
+    permissions,
+    fullAccess: false,
+  };
+}
+
+/**
+ * Hoort dit e-mailadres bij het team? Gebruikt voor de mailstromen (inlogcode,
+ * wachtwoord vergeten, activatie) waar er nog geen sessie is.
+ */
+export async function isTeamEmail(email: string): Promise<boolean> {
+  const mail = email.trim().toLowerCase();
+  if (!mail) return false;
+  if (isSuperAdminEmail(mail)) return true;
+  const db = await sql();
+  try {
+    const rows = (await db`
+      select 1 as found from portal_admins where lower(email) = ${mail} limit 1
+    `) as unknown[];
+    if (rows.length > 0) return true;
+  } catch {
+    /* verder proberen via de rollenlijst */
+  }
+  try {
+    const rows = (await db`
+      select 1 as found
+        from user_roles ur
+        join profiles p on p.id = ur.user_id
+       where lower(coalesce(p.email, '')) = ${mail}
+       limit 1
+    `) as unknown[];
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}

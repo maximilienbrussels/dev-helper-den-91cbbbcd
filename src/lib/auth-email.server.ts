@@ -26,6 +26,21 @@ export async function requestOrigin(): Promise<string> {
   return siteOrigin();
 }
 
+/**
+ * Startpad voor een medewerker, afgeleid uit het adres waar de aanvraag vandaan
+ * komt: een aanvraag vanuit de veld-app (maximilien.app) landt op /veld, een
+ * aanvraag vanuit het desktopbeheer op /nl/vandaag.
+ */
+export async function teamLandingPath(): Promise<string> {
+  const origin = await requestOrigin();
+  const { isFieldHostname } = await import("./app-mode");
+  try {
+    return isFieldHostname(new URL(origin).hostname) ? "/veld" : "/nl/vandaag";
+  } catch {
+    return "/nl/vandaag";
+  }
+}
+
 /** Sjablonen met een actielink; "recovery" blijft als alias bestaan. */
 export type AuthLinkKind = "invite" | "teamReset" | "teamMagic" | "verify" | "magic" | "reset";
 
