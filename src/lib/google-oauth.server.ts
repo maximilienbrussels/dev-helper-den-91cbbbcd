@@ -267,6 +267,19 @@ export async function resolveRole(email: string, fallbackRole: string): Promise<
   return fallbackRole || "user";
 }
 
-export function landingPathForRole(role: string): string {
-  return role === "admin" || role === "owner" || role === "super_admin" ? "/vandaag" : "/account";
+/**
+ * Startpad na aanmelden. Op de veld-app (maximilien.app) landt iedereen in de
+ * veldschermen; op het desktopbeheer krijgen medewerkers hun werklijst.
+ */
+export function landingPathForRole(role: string, origin?: string | null): string {
+  const isTeam = role === "admin" || role === "owner" || role === "super_admin" || role === "staff" || role === "team";
+  if (origin) {
+    try {
+      const host = new URL(origin).hostname.toLowerCase().replace(/:\d+$/, "");
+      if (host === "maximilien.app" || host.endsWith(".maximilien.app")) return "/veld";
+    } catch {
+      /* geen geldige oorsprong: val terug op het pad hieronder */
+    }
+  }
+  return isTeam ? "/vandaag" : "/account";
 }
