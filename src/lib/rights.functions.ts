@@ -9,7 +9,13 @@ export {
   FULL_ACCESS_ROLES,
   type Permission,
 } from "@/lib/rights-catalog";
-import { PERMISSIONS, type Permission } from "@/lib/rights-catalog";
+import {
+  PERMISSIONS,
+  BUILTIN_ROLES,
+  FULL_ACCESS_ROLES,
+  type Permission,
+} from "@/lib/rights-catalog";
+
 
 
 export type RoleKey = string;
