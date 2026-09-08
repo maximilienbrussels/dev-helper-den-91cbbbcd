@@ -6,7 +6,7 @@
  * activeren of een wachtwoord instellen. Er is bewust géén publieke
  * registratie.
  */
-import { isSuperAdminEmail } from "./superadmin";
+
 
 /** Staat dit adres op de whitelist (team) of is het de super-admin? */
 export async function isWhitelistedEmail(email: string): Promise<boolean> {
