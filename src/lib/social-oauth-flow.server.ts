@@ -173,7 +173,7 @@ export async function completeSocialLogin(
     userId: user.id,
   });
 
-  const landing = next || landingPathForRole(effectiveRole);
+  const landing = next || landingPathForRole(effectiveRole, origin);
   const destination = handoff
     ? new URL(
         `/inloglink?token=${encodeURIComponent(handoff)}&next=${encodeURIComponent(landing)}`,
